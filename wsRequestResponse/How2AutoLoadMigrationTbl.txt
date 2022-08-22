@@ -1,0 +1,242 @@
+
+
+equipment list code
+select /*ncid:attr.ca.9022509660013504082*/
+ nco.object_id as object_id,
+ (select (select value
+               from nc_params param
+              where o.source_object_id = param.object_id
+                and param.attr_id = 7100274909013908815 /*Special Equipment List*/
+             ) as value
+    from nc_objects o
+   where o.object_type_id = 120768 /*xDSL equipment*/
+   start with o.object_id = nco.object_id
+  connect by prior o.parent_id = o.object_id
+           AND PRIOR o.object_type_id <> 120768 /*xDSL equipment*/) as value
+  from nc_objects nco
+ where nco.object_id in (#$objectids$#)
+
+equipment type code
+select /*ncid:attr.ca.9022509660013504083*/
+ nco.object_id as object_id,
+ (select (select value
+               from nc_params param
+              where o.source_object_id = param.object_id
+                and param.attr_id = 7100274909013908813 /*Special Equipment Type*/
+             ) as value
+    from nc_objects o
+   where o.object_type_id = 120768 /*xDSL equipment*/
+   start with o.object_id = nco.object_id
+  connect by prior o.parent_id = o.object_id
+           AND PRIOR o.object_type_id <> 120768 /*xDSL equipment*/) as value
+  from nc_objects nco
+ where nco.object_id in (#$objectids$#)
+
+
+
+
+
+
+1. Create List 1
+
+select  distinct cust.account_number,cust2rfs.object_id as rfs_objId, cust2rfs.tn as tn, cust2rfs.port_id, cust2rfs.resource_id
+, decode(p.attr_id,6102468304013312383,   'FMS Region ID',5013143506013838229,    'FMS 	Service address id',null) as attr_name,
+p.value || decode(p.list_value_id, 5031830521013849756, 'AB-201',5031830521013849757, 'BC-202',null) as attr_value
+from rdb_customer_account cust,
+rdb_access_rfs_instance cust2rfs,
+nc_references rfss2o,
+nc_params p
+where cust.account_number in (
+'560858',
+'630735',
+'1014676',
+'1134786',
+'1521146',
+'1653488',
+'2077111',
+'2273716',
+'2290385',
+'2522430',
+'2523188',
+'2805372',
+'2814022',
+'3462198',
+'3684440',
+'10054461',
+'10150958',
+'11190417',
+'18505615',
+'18525012',
+'18537538',
+'18602568',
+'18613628',
+'18616128',
+'18778607',
+'18808573',
+'18829096',
+'19059370',
+'19103648',
+'19284046',
+'19500436',
+'19623069',
+'19623771',
+'19775406',
+'19799647',
+'19838565',
+'20086377',
+'20125844',
+'20132702',
+'20557762',
+'20584214',
+'20666078',
+'20667943',
+'20778804',
+'20895973',
+'29010855',
+'29040851',
+'29128044',
+'29327043',
+'29330354',
+'31011381',
+'31049262',
+'31204301',
+'31388175',
+'31491329',
+'33639523',
+'33642704',
+'33726986',
+'38129071',
+'41143346',
+'41249857',
+'45534618',
+'45561820',
+'45583580',
+'45964618',
+'46081498',
+'46507602',
+'73802657',
+'75446513',
+'75940573',
+'76897055',
+'78250175',
+'79799731',
+'79902493',
+'80088495',
+'82554216',
+'83139801',
+'85822494',
+'85962817',
+'86585359',
+'86776024',
+'86800756',
+'87131107',
+'87276393',
+'87334318',
+'87408462',
+'89989724',
+'90015146',
+'90042969',
+'90615662',
+'92393022',
+'95581693'
+)
+and cust2rfs.account_id=cust.object_id
+and rfss2o.reference=cust2rfs.object_id and rfss2o.attr_id = 4070569491013010665
+and cust2rfs.status='Active'
+and p.object_id=rfss2o.object_id
+and p.attr_id in
+( 6102468304013312383,   --- 	FMS Region ID  LIST VALUE
+5013143506013838229     ---FMS 	Service address id
+)
+order by account_number;
+-- outputs saved in fmsList.xls
+
+2. Get a list of port ID from list in step 1 to get equipment type code (saved in file eqpTypeCodes.xls)
+select /*ncid:attr.ca.9022509660013504083*/
+ nco.object_id as object_id,
+ (select (select value
+               from nc_params param
+              where o.source_object_id = param.object_id
+                and param.attr_id = 7100274909013908813 /*Special Equipment Type*/
+             ) as value
+    from nc_objects o
+   where o.object_type_id = 120768 /*xDSL equipment*/
+   start with o.object_id = nco.object_id
+  connect by prior o.parent_id = o.object_id
+           AND PRIOR o.object_type_id <> 120768 /*xDSL equipment*/) as value
+  from nc_objects nco
+ where nco.object_id in (
+9126450707613032266,
+9127476572413179336,
+9129272745013241260,
+9132244998813690408,
+9126292049813532487,
+9135578543713263236,
+9126292089613365041,
+9126450702413936294,
+9126450700813901602,
+9125893220513730206,
+9140883721113561400,
+9125971329813006587,
+9126292071613573925,
+9125971057013925792,
+9131579832413113242,
+9126450702813947070,
+9128563424813218291,
+9126013431913535670,
+9126013431913535670,
+9138411179513273481,
+9128563597613291389,
+9126007024913353778,
+9126450716213187967,
+9126292089413356750,
+9126450705413993595,
+9127908294913204108,
+9151377772913135570,
+9129781071713223693,
+9148082062113920086,
+9126450715613175527,
+9126292066213328418,
+9126292067613393588,
+9126450714113150583,
+9131025592113856247,
+9126450714213152061,
+9128847796413254723,
+9126022791213689095,
+9126450715813180288,
+9139312968213385533,
+9126450713613140368,
+9147959967013188158,
+9126450705713998485,
+9126450715613177114,
+9125918821413054367,
+9126450710413081699,
+9134509012913111174,
+9125789408413080858,
+9126292085513185270,
+9126292064013226880,
+9126292070113506435,
+9128693538313143911,
+9136125100513367927,
+9126187240613677948)
+-- output saved in 
+
+3. Get a list of equipment list type codes  (saved in file eqpListTypeCodes.xls)
+select /*ncid:attr.ca.9022509660013504082*/
+ nco.object_id as object_id,
+ (select (select value
+               from nc_params param
+              where o.source_object_id = param.object_id
+                and param.attr_id = 7100274909013908815 /*Special Equipment List*/
+             ) as value
+    from nc_objects o
+   where o.object_type_id = 120768 /*xDSL equipment*/
+   start with o.object_id = nco.object_id
+  connect by prior o.parent_id = o.object_id
+           AND PRIOR o.object_type_id <> 120768 /*xDSL equipment*/) as value
+  from nc_objects nco
+ where nco.object_id in (portIds as in step 2)
+
+4. Open Access file testdata.accdb, run query "Data2bLoaded", saved its result into testdataList.csv
+5. from this path, run 
+python readlist.py

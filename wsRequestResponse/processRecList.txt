@@ -1,0 +1,37 @@
+#Input: serviceIds.csv, its first column has serviceId 
+#Output: the serviceId information will be inserted or updated in migration_copper_details of the env of the url1/2
+import requests
+import json
+import urllib3
+import csv
+
+#disable warning message
+import warnings
+warnings.filterwarnings("ignore")
+
+url1 = 'https://flcncapp-dv14.tsl.telus.com/telus/gem/rest/api/lc/v1/wsSoapCall'
+url2 = 'https://flcncapp-dv14.tsl.telus.com/telus/gem/rest/api/compasstofifa/v1/connectivityload'
+#Read serviceId from input file
+with open('serviceIds.csv') as csvfile:
+	readCSV = csv.reader(csvfile, delimiter=',')
+	for row in readCSV:
+		svid =row[0]
+		#call api to get data
+		x = requests.get(url1, params = {"serviceId": svid}, verify=False)
+		#to print out json output
+		print("x.text=" + x.text)
+
+		#convert the output response to request to load migration table
+		request_data=json.loads(x.text)
+
+		#call API to load data into migration table
+		
+		try:
+			r = requests.post(url2, json=request_data,  headers={'Content-Type':'application/json'}, verify=False)
+			#To print out json response
+			print(r.text)
+			if r.status_code != 200:
+				print("Failed to send notification, (%d): %s" % (r.status_code, r.text))
+		except requests.exceptions.RequestException as e:  # This is the correct syntax
+		    	print("error is " + e)
+    
